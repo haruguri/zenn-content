@@ -1,7 +1,7 @@
 """
-大数の法則は、独立が成り立たないとき何が起きるか — 世論調査を例にシミュレーションで見る
+独立が成り立たないとき、大数の法則に何が起きるか — 世論調査を例にシミュレーションで見る
 再現スクリプト（図1〜図3と本文の表）。依存: numpy, matplotlib
-乱数は default_rng(2026) を 1 回だけ初期化し、図1 → 図2 → 図3 → 表 の順に消費する。
+乱数は default_rng(2026) を 1 回だけ初期化し、図1 → 図2 → 図3 → 表 の順に消費する。末尾の検算だけ別の rng。
 """
 import numpy as np
 import matplotlib
@@ -45,29 +45,12 @@ def sample_cluster(n, m, rho, p=P):
     return (rng.random((k, m)) < p_k[:, None]).ravel()[:n]
 
 
-def sample_decaying(n, phi, p=P):
-    """減衰する相関。二値マルコフ連鎖。前の人と同じ答えになる確率 (1+phi)/2。
-    定常分布は (0.5, 0.5)、k 人離れた 2 人の相関はちょうど phi**k。"""
-    flips = rng.random(n) >= (1 + phi) / 2      # True なら前の人と逆の答え
-    flips[0] = rng.random() < p                  # 先頭だけ賛成/反対を直接引く
-    return np.cumsum(flips) % 2 == 1              # 反転の回数の偶奇 = 現在の答え
-
-
 # ============================================================
 # 理論値: Var(標本平均) = σ²/n · (1 + (n-1)·平均相関)
 # ============================================================
 def deff_cluster(n, m, rho):
     """束抽出の (1 + (n-1)·平均相関)。同じ束の組の割合 (m-1)/(n-1) × rho。"""
     return 1 + (m - 1) * rho
-
-
-def deff_decaying(n, phi):
-    """減衰する相関の (1 + (n-1)·平均相関)。
-    Σ_{k=1}^{n-1} (n-k) phi^k = phi·(n(1-phi) - (1-phi^n)) / (1-phi)^2 を使う。"""
-    if phi == 0:
-        return 1.0
-    s = phi * (n * (1 - phi) - (1 - phi**n)) / (1 - phi) ** 2
-    return 1 + 2 * s / n
 
 
 def sd_pt(n, deff, p=P):
@@ -80,18 +63,17 @@ def running_mean(x):
 
 
 # ============================================================
-# 図1: 4 通りの入り方で「ここまでの賛成率」を 8 本ずつ
+# 図1: 独立／束100人／束1,000人 で「ここまでの賛成率」を 8 本ずつ
 # ============================================================
 panels = [
     ("独立",                       lambda: sample_independent(N_MAX),        lambda n: deff_cluster(n, 1, 0.0)),
     ("束：1束100人・束の中の相関0.1",  lambda: sample_cluster(N_MAX, 100, 0.1),  lambda n: deff_cluster(n, 100, 0.1)),
     ("束：1束1,000人・束の中の相関0.1", lambda: sample_cluster(N_MAX, 1000, 0.1), lambda n: deff_cluster(n, 1000, 0.1)),
-    ("減衰する相関：φ=0.98",         lambda: sample_decaying(N_MAX, 0.98),     lambda n: deff_decaying(n, 0.98)),
 ]
 n_axis = np.arange(1, N_MAX + 1)
 n_grid = np.unique(np.geomspace(10, N_MAX, 200).astype(int))
 
-fig, axes = plt.subplots(2, 2, figsize=(11, 7.5), sharex=True, sharey=True)
+fig, axes = plt.subplots(1, 3, figsize=(14, 4.8), sharex=True, sharey=True)
 for ax, (title, gen, deff) in zip(axes.ravel(), panels):
     for _ in range(TRIALS):
         ax.plot(n_axis, 100 * running_mean(gen()), lw=0.8, alpha=0.85)
@@ -105,11 +87,10 @@ for ax, (title, gen, deff) in zip(axes.ravel(), panels):
     ax.set_title(title, fontsize=11)
     ax.text(1050, 83, f"1,000人の時点で ±{2*sd_pt(1000, deff(1000)):.1f}pt",
             fontsize=8.5, ha="left", va="top")
-for ax in axes[1]:
+for ax in axes:
     ax.set_xlabel("聞いた人数 n（対数）")
-for ax in axes[:, 0]:
-    ax.set_ylabel("ここまでの賛成率（%）")
-fig.suptitle("独立が崩れる入り方と、賛成率の落ち着き方（各8試行、赤は理論の±2σ）", fontsize=12)
+axes[0].set_ylabel("ここまでの賛成率（%）")
+fig.suptitle("束にして聞くと、賛成率の落ち着き方はどう変わるか（各8試行、赤は理論の±2σ）", fontsize=12)
 fig.tight_layout()
 fig.savefig("fig1_panels.png", dpi=130)
 plt.close(fig)
@@ -155,7 +136,7 @@ plt.close(fig)
 
 
 # ============================================================
-# 図3 と表: 9 通りの入り方で、理論の「何人分か」と実測を突き合わせる
+# 図3 と表: 6 通りの束の作り方で、理論の「何人分か」と実測を突き合わせる
 # ============================================================
 R3 = 2000
 setups = [
@@ -165,11 +146,8 @@ setups = [
     ("束 m=100, ρ=0.1",   lambda: sample_cluster(N0, 100, 0.1),    deff_cluster(N0, 100, 0.1)),
     ("束 m=100, ρ=0.5",   lambda: sample_cluster(N0, 100, 0.5),    deff_cluster(N0, 100, 0.5)),
     ("束 m=1000, ρ=0.1",  lambda: sample_cluster(N0, 1000, 0.1),   deff_cluster(N0, 1000, 0.1)),
-    ("減衰 φ=0.5",        lambda: sample_decaying(N0, 0.5),        deff_decaying(N0, 0.5)),
-    ("減衰 φ=0.8",        lambda: sample_decaying(N0, 0.8),        deff_decaying(N0, 0.8)),
-    ("減衰 φ=0.98",       lambda: sample_decaying(N0, 0.98),       deff_decaying(N0, 0.98)),
 ]
-print(f"{'入り方':16s} {'実測sd(pt)':>10s} {'理論sd(pt)':>10s} {'実測 何人分':>10s} {'理論 何人分':>10s}")
+print(f"{'束の作り方':16s} {'実測sd(pt)':>10s} {'理論sd(pt)':>10s} {'実測 何人分':>10s} {'理論 何人分':>10s}")
 th_neff, emp_neff, labels = [], [], []
 for name, gen, deff in setups:
     means = np.array([gen().mean() for _ in range(R3)])
@@ -184,15 +162,33 @@ fig, ax = plt.subplots(figsize=(6.2, 6))
 ax.plot([5, 2000], [5, 2000], "k--", lw=0.8)
 ax.plot(th_neff, emp_neff, "o", ms=6)
 # 近い点同士はラベルを上下に振り分ける
-offsets = [(7, -3), (7, 6), (7, -10), (7, -3), (7, -3), (7, -10), (7, -3), (7, -3), (7, 6)]
+offsets = [(7, -3), (7, 6), (7, -10), (7, -3), (7, -3), (7, -3)]
 for x, y, lab, off in zip(th_neff, emp_neff, labels, offsets):
     ax.annotate(lab, (x, y), textcoords="offset points", xytext=off, fontsize=8.5)
 ax.set_xscale("log"); ax.set_yscale("log")
 ax.set_xlim(5, 2000); ax.set_ylim(5, 2000)
 ax.set_xlabel("理論：1,000人が何人分か  n / (1 + (n−1)·平均相関)")
 ax.set_ylabel("実測：1,000人が何人分か（2,000試行の分散から）")
-ax.set_title("9通りの入り方が、1本の式に乗る", fontsize=11)
+ax.set_title("6通りの束の作り方が、1本の式に乗る", fontsize=11)
 ax.grid(True, which="both", lw=0.3, alpha=0.5)
 fig.tight_layout()
 fig.savefig("fig3_neff.png", dpi=130)
 plt.close(fig)
+
+
+# ============================================================
+# 検算: 束の生成機構が「各人の賛成確率 0.5・同じ束の2人の相関 rho」になっているか
+# （図1〜3の乱数の消費順を変えないよう、ここだけ別の rng を使う）
+# ============================================================
+rng_check = np.random.default_rng(SEED + 1)
+m_c, rho_c, k_c = 100, 0.1, 20_000
+a_c = (1 / rho_c - 1) / 2
+p_k = rng_check.beta(a_c, a_c, size=k_c)
+x = (rng_check.random((k_c, m_c)) < p_k[:, None]).astype(float)   # k_c 束 × m_c 人
+xc = x - P
+same = ((xc.sum(1) ** 2 - (xc ** 2).sum(1)) / (m_c * (m_c - 1))).mean() / (P * (1 - P))
+diff = np.corrcoef(x[:-1, 0], x[1:, 1])[0, 1]
+print(f"\n検算（1束{m_c}人・相関{rho_c}・{k_c:,}束）")
+print(f"  全体の賛成率        {x.mean():.4f}")
+print(f"  同じ束の2人の相関   {same:.4f}")
+print(f"  違う束の2人の相関   {diff:.4f}")
