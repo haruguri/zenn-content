@@ -154,7 +154,7 @@ $$
 
 この記事は計算の側でした。同じ話を、具体例を交えて式を最小限にして書いたものが IntereStat のコラム[「1,000人の世論調査は、本当に1,000人分か」](https://www.interestat.jp/columns/yoron-chousa-taisuu-housoku)にあります。大数の法則そのものの定義は[単元ページ](https://www.interestat.jp/units/taisuu-housoku)へ。
 
-再現スクリプト（図1〜図3・表・検算を一括生成）：[GitHub のリンク（公開時に差し替え）]
+再現スクリプト（図1〜図3・表・検算を一括生成）：[lln_dependence.py](https://github.com/haruguri/zenn-content/blob/main/scripts/lln_dependence.py)
 
 ---
 
