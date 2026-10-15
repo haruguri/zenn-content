@@ -3,7 +3,7 @@ title: "共通因子があるとき、大数の法則に何が起きるか──
 emoji: "🏦"
 type: "tech"
 topics: ["Python", "数学", "シミュレーション", "統計学", "確率"]
-published: false
+published: true
 ---
 
 「1万件も貸し出せば、貸倒率は正確に読める」。銀行の与信の説明でよく出てくる言い方です。
