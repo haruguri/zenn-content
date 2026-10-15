@@ -3,7 +3,7 @@
 [IntereStat](https://www.interestat.jp)（統計を「前提を置いて判断する道具」として扱う学習サイト）のコラムの実験部分を、コード付きで公開しています。
 
 - 記事本体は [Zenn](https://zenn.dev/haruguri) にあります
-- 図の再現スクリプトは `scripts/` にあります（numpy と matplotlib のみで動きます）
+- 図の再現スクリプトは `scripts/` にあります（numpy・scipy・matplotlib で動きます）
 - 式を減らして具体例で書いた版は IntereStat のコラムにあります
 
 ## 記事一覧
