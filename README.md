@@ -10,8 +10,9 @@
 
 | 記事 | 対応するコラム | スクリプト |
 |---|---|---|
-| [独立が成り立たないとき、大数の法則に何が起きるか](Zennの記事URL・公開後に差し替え) | [1,000人の世論調査は、本当に1,000人分か](https://www.interestat.jp/columns/yoron-chousa-taisuu-housoku) | [lln_dependence.py](scripts/lln_dependence.py) |
+| [独立が成り立たないとき、大数の法則に何が起きるか](https://zenn.dev/haruguri/articles/lln-without-independence-polling) | [1,000人の世論調査は、本当に1,000人分か](https://www.interestat.jp/columns/yoron-chousa-taisuu-housoku) | [lln_dependence.py](scripts/lln_dependence.py) |
 | [共通因子があるとき、大数の法則に何が起きるか](https://zenn.dev/haruguri/articles/lln-common-factor-credit) | [貸出を増やせば、貸倒率は予測できるようになるのか](https://www.interestat.jp/columns/kashidashi-taisuu-housoku) | [lln-common-factor-credit.py](scripts/lln-common-factor-credit.py) |
+| [平均が途中で変わるとき、大数の法則に何が起きるか](https://zenn.dev/haruguri/articles/lln-regime-shift-deposit) | [引出率が跳ねたとき、それが一時的かどうかはデータで分かるのか](https://www.interestat.jp/columns/yokin-taisuu-housoku) | [lln-regime-shift-deposit.py](scripts/lln-regime-shift-deposit.py) |
 
 ## 構成
 
